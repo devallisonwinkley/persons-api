@@ -1,67 +1,18 @@
-/*
-// NODE.JS WAY WITHOUT FRAMEWORK
-
-const http = require("http"); // common js way/version - can be converted into an ES6 module
-// import http from "http"; - new way/version
-
-let notes = [
-  {
-    id: 1,
-    content: "HTML is easy",
-    important: true,
-  },
-  {
-    id: 2,
-    content: "Browser can only execute JavaScript",
-    important: false,
-  },
-  {
-    id: 3,
-    content: "GET and POST are the most important methods of HTTP protocol",
-    important: true,
-  },
-];
-
-const app = http.createServer((request, response) => {
-  // how to return an object
-  response.writeHead(200, { "Content-Type": "/plain" });
-  response.end("Hello, World!");
-
-  // how to return JSON data
-  response.writeHead(200, { "Content-Type": "application/json" });
-  response.end(JSON.stringify({ message: "Hello, NodeJS!" }));
-
-  response.writeHead(200, { "Content-Type": "application/json" });
-  response.end(JSON.stringify(notes));
-});
-
-const PORT = 3001;
-
-app.listen(PORT);
-console.log(`Server is running on port ${PORT}`);
-*/
-
-// EXPRESS is a NODE.js framework in the back-end side
-// EXPRESS (new, easier, and better way)
-
-/** RESTful API CONVENTION
- 
- * ROUTES           HTTP      ACTION                                            STATUS  
- 
- * api/notes/:id    GET       fetch a single resource                            200 OK
- * api/notes        GET       fetch all resources                                200 OK
- * api/notes        POST      create a new resource                              201 Created
- * api/notes/:id    DELETE    delete a single resource                           204 No Content
- * api/notes/:id    PUT       replace the specified resource
- * api/notes/:id    PATCH     replaces a part of the specified resource
- */
-
 import express from "express";
 import cors from "cors";
 import morgan from "morgan";
+import mongoose from "mongoose";
+import Person from "./models/Person.js";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 const app = express();
 const PORT = 3001;
+const url = process.env.MONGODB_URI;
+
+mongoose.set("strictQuery", false);
+mongoose.connect(url);
 
 morgan.token("body", function (req, res) {
   return JSON.stringify(req.body);
@@ -77,55 +28,41 @@ app.use(
 );
 app.use(express.static("dist"));
 
-// app.use(requestLogger);
-
-let persons = [
-  {
-    id: 1,
-    name: "Arto Hellas",
-    number: "040-123456",
-  },
-  {
-    id: 2,
-    name: "Ada Lovelace",
-    number: "390-523532",
-  },
-  {
-    id: 3,
-    name: "Dan Abramov",
-    number: "12-43-234345",
-  },
-];
-
 function unknownEndPoint(request, response) {
   response.status(404).send({ error: "unknown endpoint" });
 }
 
-// function requestLogger(request, response, next) {
-// console.log(`Method: ${request.method}`);
-// console.log(`Path: ${request.path}`);
-// console.log(`Body: `, request.body);
-// next();
+// function generateId() {
+//   const maxId = persons.length > 0 ? Math.max(...persons.map((p) => p.id)) : 0;
 
-function generateId() {
-  const maxId = persons.length > 0 ? Math.max(...persons.map((p) => p.id)) : 0;
-
-  return maxId + 1;
-}
+//   return maxId + 1;
+// }
 
 app.get("/", (request, response) => {
   response.send("<h1>Hello, Express!</h1>");
 });
 
 app.get("/api/persons", (request, response) => {
-  response.status(200).json(persons);
+  Person.find({}).then((persons) => {
+    response.json(persons);
+  });
 });
 
 app.get("/api/persons/:id", (request, response) => {
-  const id = Number(request.params.id);
-  const person = persons.find((person) => person.id === id);
-  response.status(200).json(person);
+  const id = request.params.id;
+  Person.findById(id).then((person) => response.status(200).json(person));
 });
+
+// Creating and Saving objects - POST REQUEST
+// const person = new Person({
+//   name: "Arto Hellas",
+//   number: "1233214567",
+// });
+
+// person.save().then((result) => {
+//   console.log("Person saved!");
+//   mongoose.connection.close();
+// });
 
 app.post("/api/persons", (request, response) => {
   const body = request.body;
@@ -134,22 +71,37 @@ app.post("/api/persons", (request, response) => {
     return response.status(400).json({ error: "content missing" });
   }
 
-  const person = {
-    id: generateId(),
+  const person = new Person({
     name: body.name,
     number: body.number || false,
-  };
+  });
 
-  persons = persons.concat(person);
+  person.save().then((savedPerson) => {
+    response.status(201).json(savedPerson);
+  });
 
-  response.status(201).json(person);
+  // INSERT INTO people (name, number) VALUES ($body.name, $body.number) >> SAMPLE SYNTAX VIA SQL
 });
 
-app.delete("/api/persons/:id", (request, response) => {
-  const id = Number(request.params.id);
-  persons = persons.filter((person) => person.id !== id);
+// Deleting single objecy from databse = DELETE : ID
+// Person.findByIdAndDelete("654d3a0620924428dd8221b7").then((result) => {
+//   console.log("Person has been deleted!");
+//   mongoose.connection.close();
+// });
 
-  response.status(204).end();
+app.delete("/api/persons/:id", (request, response) => {
+  // MY CODE
+  // const id = request.params.id;
+  // Person.findByIdAndDelete(id).then((person) =>
+  //   response.status(204).json(person)
+  // );
+
+  // CODE NI COACH
+  const id = request.params.id;
+  Person.findByIdAndDelete(id).then((returnedStatus) => {
+    console.log(returnedStatus);
+    response.status(204).end();
+  });
 });
 
 app.use(unknownEndPoint);
