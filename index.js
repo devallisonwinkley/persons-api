@@ -1,6 +1,6 @@
 import express from "express";
 import cors from "cors";
-import morgan from "morgan";
+// import morgan from "morgan";
 import mongoose from "mongoose";
 import Person from "./models/Person.js";
 import dotenv from "dotenv";
@@ -14,9 +14,9 @@ const url = process.env.MONGODB_URI;
 mongoose.set("strictQuery", false);
 mongoose.connect(url);
 
-morgan.token("body", function (req, res) {
-  return JSON.stringify(req.body);
-});
+// morgan.token("body", function (req, res) {
+//   return JSON.stringify(req.body);
+// });
 
 // Express has a built-in middleware/method
 app.use(express.json()); // this is how we activate the json parser and needs to be placed on top so it can run first prior to the methods/requests
