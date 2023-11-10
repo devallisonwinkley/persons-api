@@ -23,9 +23,9 @@ app.use(express.json()); // this is how we activate the json parser and needs to
 
 // cors will enable our API to be expoosed to any client that wants to access the resource
 app.use(cors());
-app.use(
-  morgan(":method :url :status :response-time ms - :res[content-length] :body")
-);
+// app.use(
+//   morgan(":method :url :status :response-time ms - :res[content-length] :body")
+// );
 app.use(express.static("dist"));
 
 function unknownEndPoint(request, response) {
