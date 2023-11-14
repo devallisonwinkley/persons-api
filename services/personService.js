@@ -19,9 +19,16 @@ function deletePerson(id) {
   return Person.findByIdAndDelete(id).then((returnedStatus) => returnedStatus);
 }
 
+function editPerson(id, newPerson) {
+  return Person.findByIdAndUpdate(id, newPerson, { new: true }).then(
+    (updatedPerson) => updatedPerson
+  );
+}
+
 export default {
   getPerson,
   getPersons,
   createPerson,
   deletePerson,
+  editPerson,
 };
