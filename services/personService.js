@@ -1,4 +1,5 @@
 import Person from "../models/Person.js";
+import User from "../models/User.js";
 
 function getPersons() {
   return Person.find({}).then((persons) => persons);
@@ -8,11 +9,21 @@ function getPerson(id) {
   return Person.findById(id).then((person) => person);
 }
 
-function createPerson({ name, number }) {
-  return Person.create({
+async function createPerson({ userId, name, number }) {
+  const user = await User.findById(userId);
+
+  const person = new Person({
     name,
     number,
-  }).then((savedPerson) => savedPerson);
+    user: user.id,
+  });
+
+  const savedPerson = await person.save();
+
+  user.people = user.people.concat(savedPerson._id);
+  await user.save();
+
+  return savedPerson;
 }
 
 function deletePerson(id) {

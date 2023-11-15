@@ -3,6 +3,7 @@ import cors from "cors";
 import morgan from "morgan";
 import errorHandler from "./middlewares/errorHandler.js";
 import personRouter from "./routes/personRouter.js";
+import userRouter from "./routes/userRouter.js";
 import unknownEndPoint from "./middlewares/unknownEndpoint.js";
 import connectToDB from "./utils/connectToDB.js";
 import config from "./utils/config.js";
@@ -27,6 +28,7 @@ app.use(
 );
 
 app.use("/api/persons", personRouter);
+app.use("/api/users", userRouter);
 app.use(unknownEndPoint);
 app.use(errorHandler);
 

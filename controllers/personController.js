@@ -27,7 +27,7 @@ function createPerson(req, res, next) {
   // }
 
   personService
-    .createPerson(req.body)
+    .createPerson(body)
     .then((savedPerson) => res.json(savedPerson))
     .catch((error) => next(error));
 
