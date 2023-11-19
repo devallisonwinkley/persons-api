@@ -9,8 +9,8 @@ function getPerson(id) {
   return Person.findById(id).then((person) => person);
 }
 
-async function createPerson({ userId, name, number }) {
-  const user = await User.findById(userId);
+async function createPerson({ name, number }, decodedToken) {
+  const user = await User.findById(decodedToken.id);
 
   const person = new Person({
     name,

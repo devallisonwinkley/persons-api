@@ -1,4 +1,6 @@
 import personService from "../services/personService.js";
+import jwt from "jsonwebtoken";
+import config from "../utils/config.js";
 
 function getPerson(req, res, next) {
   const id = req.params.id;
@@ -21,13 +23,18 @@ function getPersons(_req, res) {
 
 function createPerson(req, res, next) {
   const body = req.body;
+  const decodedToken = jwt.verify(req.token, config.SECRET);
+
+  if (!decodedToken.id) {
+    return res.status(401).json({ errror: "invalid token" });
+  }
 
   // if (body.name === undefined) {
   //   return res.status(400).json({ error: "content missing" });
   // }
 
   personService
-    .createPerson(body)
+    .createPerson(body, decodedToken)
     .then((savedPerson) => res.json(savedPerson))
     .catch((error) => next(error));
 

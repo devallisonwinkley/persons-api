@@ -7,6 +7,8 @@ import userRouter from "./routes/userRouter.js";
 import unknownEndPoint from "./middlewares/unknownEndpoint.js";
 import connectToDB from "./utils/connectToDB.js";
 import config from "./utils/config.js";
+import loginRouter from "./routes/loginRouter.js";
+import tokenExtractor from "./middlewares/tokenExtractor.js";
 
 const app = express();
 
@@ -27,8 +29,10 @@ app.use(
   morgan(":method :url :status :response-time ms - :res[content-length] :body")
 );
 
-app.use("/api/persons", personRouter);
 app.use("/api/users", userRouter);
+app.use("/api/login", loginRouter);
+app.use("/api/persons", tokenExtractor, personRouter);
+
 app.use(unknownEndPoint);
 app.use(errorHandler);
 
